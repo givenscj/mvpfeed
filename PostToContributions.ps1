@@ -147,9 +147,42 @@ function ParseYouTubeDate($val)
     
 }
 
-function ProcessTechCommunity($username)
+function ProcessTechCommunity($userId)
 {
-    #https://techcommunity.microsoft.com/t5/user/viewprofilepage/user-id/56
+    #https://techcommunity.microsoft.com/t5/user/viewprofilepage/user-id/
+    
+    $page = 0;
+    $count = 0;
+
+    while($page -lt 5)
+    {
+        $url = "https://techcommunity.microsoft.com/gxcuf89792/plugins/custom/microsoft/o365/custom-messages-feed-showmore-conversations"
+        $post = "userId=$userId&pageOffsetValue=$count&type=startedConversations";
+        $html = DoPost $url $post;
+
+        $htmlDoc = new-object HtmlAgilityPack.HtmlDocument;
+        $htmlDoc.LoadHtml($html);
+        $homeNode = $htmlDoc.DocumentNode;
+
+        $nodes = $homeNode.SelectNodes(".//li");
+
+        foreach($node in $nodes)
+        {
+            $post = new-object post;
+            $post.Title = ParseValue $node.InnerHtml "subject-text`">" "<";
+            $url = ParseValue $node.innerhtml "subject-link`" href=`"" "`"";
+            $post.url = "https://techcommunity.microsoft.com/" + $url;
+            $post.postdate = ParseValue $html "time`">,&nbsp;" "<";
+            $post.reach = $(ParseValue $html "views`">" "<").replace(",","").replace("Views","").trim();
+            $post.quantity = 1;
+
+            AddPostToMVPProfile($post);
+            
+            $count++;
+        }
+
+        $page++;
+    }
 }
 
 function LinkedInPosts($username)
@@ -862,6 +895,9 @@ cd $global:scriptPath;
 LoadConfig;
 
 Initalize;
+
+#https://techcommunity.microsoft.com/t5/user/viewprofilepage/user-id/62590
+ProcessTechCommunity $config.TechCommunityId;
 
 #$channelurl = "https://www.youtube.com/user/TEDtalksDirector/videos";
 ProcessYouTubeChannel $config.YouTubeChannel;
