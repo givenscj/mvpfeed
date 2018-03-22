@@ -7,10 +7,10 @@ Blogs (nice ones with ATOM/XML Feeds)
 GitHub
 Amazon Books
 YouTube
+TechCommunity
 
 Will eventually support:
 
 MSDN
 Meetups
-Tech Community
 LinkedIn
